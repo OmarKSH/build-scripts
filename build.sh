@@ -23,7 +23,7 @@ chroot() {
 	        && sudo mount -t devtmpfs udev dev \
 	        && sudo mount -t devpts devpts dev/pts
 
-	sudo chroot . /bin/sh -c "{ [ ! -f '/etc/resolv.conf' ] || [ -z \"$(cat /etc/resolv.conf)\" ]; } && echo 'nameserver 1.1.1.1' > /etc/resolv.conf; $@"
+	sudo chroot . /bin/sh -c "r=\"\$(cat /etc/resolv.conf 2>/dev/null)\"; [ -z \"\$r\" ] && echo 'nameserver 1.1.1.1' > /etc/resolv.conf; chmod 777 /tmp; $@"
 
 	cleanup
 }
@@ -40,19 +40,20 @@ SCRIPT=scripts/"${1:-$(ls scripts | select_from_list)}"
 
 . "$SCRIPT"
 
-[ "${#BUILD_CMD}" -eq 0 ] && echo "Launching dev environment!"
+[ "${#BUILD_CMD}" -eq 0 ] && echo "No build command, launching dev environment!"
 
 COMMAND=$(cat <<- EOF
 set -a # export all variables
 
 # Make the build script variables available inside the launched environment
-$(cat "$SCRIPT")
+$([ -f "$SCRIPT" ] && cat "$SCRIPT")
 
-trap 'echo "Error! dropping to shell"; sh' ERR
+trap 'echo "Interrupting flow"; exec sh' INT
+trap 'echo "Error! dropping to shell"; exec sh' ERR
 
 if type apt >/dev/null 2>/dev/null; then
 	export DEBIAN_FRONTEND=noninteractive
-	apt update && apt upgrade -y && DEBIAN_FRONTEND=noninteractive apt install -y build-essential pkg-config
+	apt update && apt upgrade -y && DEBIAN_FRONTEND=noninteractive apt install -y build-essential pkgconf automake autoconf
 elif type xbps-install 2>/dev/null >/dev/null; then
 	xbps-install -Suy && xbps-install -y base-devel
 elif type apk >/dev/null 2>/dev/null; then
@@ -60,23 +61,24 @@ elif type apk >/dev/null 2>/dev/null; then
 	apk add --no-cache build-base pkgconf automake autoconf
 fi
 
-[ "${#BUILD_CMD}" -eq 0 ] && { exec sh; exit 0; }
+[ ${#BUILD_CMD} -eq 0 ] && { exec sh; exit 0; }
 
 $PKG_CMD
 
-[ -d "$TARGET_DIR" ] || { $DOWNLOAD_CMD; }
-[ -d "$TARGET_DIR" ] || { echo 'Failed to download files'; exit 1; }
+[ -e "$TARGET_DIR" -a ! -d "$TARGET_DIR" ] && echo "$TARGET_DIR already exists and is not a directory" && exit 1 #&& TARGET_DIR="${TARGET_DIR}.$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c4)"
+[ ! -d "$TARGET_DIR" ] && { $DOWNLOAD_CMD; }
+[ ! -d "$TARGET_DIR" ] && { echo 'Failed to download files'; exit 1; }
 cd "$TARGET_DIR"
 
 chown -R $(id -u):$(id -g) .
 
-git config --global --add safe.directory .
+git config --global --add safe.directory "\$PWD" 2>/dev/null || true
 
 $BUILD_CMD
 
 strip $TARGET || true
 
-[ ! -d packelf ] && [ ! -d ../packelf ] && git clone --depth=1 https://github.com/OmarKSH/packelf packelf
+[ ! -d packelf ] && [ ! -d ../packelf ] && { git clone --depth=1 https://github.com/OmarKSH/packelf packelf 2>/dev/null || true; }
 PATH=\$PATH:packelf:../packelf
 for f in $TARGET; do { packelf.sh \$PWD/\$f \$f.blob 2>/dev/null && chmod +x \$f.blob; } || true; done
 
@@ -102,14 +104,21 @@ RUNTIME="${2:-$(find chroots -maxdepth 1 \( \( -type d ! -path chroots \) -o \( 
 if [ -z "$RUNTIME" -o "$RUNTIME" = 'docker' ]; then
 	echo "Using docker!"
 
+	docker kill -9 build-base 2>/dev/null
+	docker rm build-base 2>/dev/null
 	docker run --name build-base --rm -it -v"$_PWD":/src -w/src ${DOCKER_IMG:-alpine:latest} sh -c "$COMMAND"
 
-	if [ -d "$_PWD/$TARGET_DIR" ]; then
-		NEW_TARGET_DIR="${TARGET_DIR}_src.$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 10)"
-		mv "$_PWD/$TARGET_DIR" "$_PWD/$NEW_TARGET_DIR";
-		TARGET_DIR="$NEW_TARGET_DIR"
+	if [ -d "$_PWD/$TARGET_DIR" -a -n "$TARGET_DIR" ]; then
+		for f in $TARGET; do #if one of the targets have the same name as the directory
+			[ "$(basename "$TARGET_DIR")" != "$(basename "$f")" ] && continue
+			NEW_TARGET_DIR="${TARGET_DIR}.src"
+			[ -e "$_PWD/$NEW_TARGET_DIR" ] && NEW_TARGET_DIR="${NEW_TARGET_DIR}.$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c4)"
+			mv "$_PWD/$TARGET_DIR" "$_PWD/$NEW_TARGET_DIR";
+			TARGET_DIR="$NEW_TARGET_DIR"
+			break
+		done
 
-		OLD_PWD="$PWD"; cd "$_PWD/$TARGET_DIR"; for f in $TARGET; do [ -e "$_PWD/$f" ] && mv -i "$f" "$_PWD/${f##*/}.$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 10)" || mv -n "$f" "$_PWD"; done; cd "$OLD_PWD"
+		OLD_PWD="$PWD"; cd "$_PWD/$TARGET_DIR"; for f in $TARGET; do [ -e "$_PWD/$f" ] && mv -i "$f" "$_PWD/${f##*/}.$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c4)" || mv -n "$f" "$_PWD"; done; cd "$OLD_PWD"
 
 		echo -n "Delete source directory? (y/N): " && read -r REPLY && { [ "$REPLY" = 'y' ] || [ "$REPLY" = 'Y' ]; } && echo "Deleting $TARGET_DIR" && sudo rm -rf "$_PWD/$TARGET_DIR"
 	fi
@@ -121,7 +130,7 @@ else
 	if [ -d "$RUNTIME" ]; then
 		OLD_PWD="$PWD"; cd "$RUNTIME" && chroot "$COMMAND"; cd "$OLD_PWD"
 		#OLD_PWD="$PWD"; mkdir -p "out/$(basename "$RUNTIME")" 2>/dev/null; cd "$RUNTIME/$TARGET_DIR"; mv "$TARGET" "$OLD_PWD/out/$(basename "$RUNTIME")"; cd "$OLD_PWD"
-		OLD_PWD="$PWD"; cd "$RUNTIME/$TARGET_DIR"; for f in $TARGET; do [ -e "$_PWD/$f" ] && mv -i "$f" "$_PWD/${f##*/}.$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 10)" || mv -n "$f" "$_PWD"; done; cd "$OLD_PWD"
+		OLD_PWD="$PWD"; cd "$RUNTIME/$TARGET_DIR"; for f in $TARGET; do [ -e "$_PWD/$f" ] && mv -i "$f" "$_PWD/${f##*/}.$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c4)" || mv -n "$f" "$_PWD"; done; cd "$OLD_PWD"
 		if grep -q "$RUNTIME" /proc/mounts; then
 			echo "Couldn't fully umount $RUNTIME"
 		elif [ -d "$RUNTIME" ]; then
