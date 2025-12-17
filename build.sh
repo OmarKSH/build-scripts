@@ -35,12 +35,19 @@ trap 'cleanup; exit' INT
 _PWD="$PWD"
 cd "${0%/*}"
 
-mkdir scripts 2>/dev/null
-SCRIPT=scripts/"${1:-$(ls scripts | select_from_list)}"
+SCRIPT_CHOICE="$1"
+SCRIPT_DIR=scripts
+mkdir "$SCRIPT_DIR" 2>/dev/null
+if [ -e "$SCRIPT_DIR/$SCRIPT_CHOICE" -a -n "$SCRIPT_CHOICE" ]; then
+	SCRIPT="$SCRIPT_DIR/$SCRIPT_CHOICE"
+else
+	SCRIPT_OPTIONS="$(find "$SCRIPT_DIR" -maxdepth 1 -name "*$SCRIPT_CHOICE*" -exec basename {} \;)"
+	[ -n "$SCRIPT_OPTIONS" ] && SCRIPT="$SCRIPT_DIR/$(echo "$SCRIPT_OPTIONS" | select_from_list -1)"
+fi
 
-. "$SCRIPT"
+[ ${#SCRIPT} -gt 0 ] && . "$SCRIPT"
 
-[ "${#BUILD_CMD}" -eq 0 ] && echo "No build command, launching dev environment!"
+[ ${#BUILD_CMD} -eq 0 ] && echo "No build command, launching dev environment!"
 
 COMMAND=$(cat <<- EOF
 set -e # needed to make error trap work using EXIT signal
@@ -98,11 +105,19 @@ exit 0
 EOF
 )
 
-mkdir chroots 2>/dev/null
-#RUNTIME="${2:-$(ls chroots | select_from_list)}"
-RUNTIME="${2:-$(find chroots -maxdepth 1 \( \( -type d ! -path chroots \) -o \( -type f -name '*.tar.gz' \) \) -exec basename {} \; | select_from_list)}"
+RUNTIME_CHOICE="$2"
+RUNTIME_DIR=chroots
+mkdir "$RUNTIME_DIR" 2>/dev/null
+if [ -e "$RUNTIME_DIR/$RUNTIME_CHOICE" -a -n "$RUNTIME_CHOICE" ]; then
+	RUNTIME="$RUNTIME_CHOICE"
+else
+	RUNTIME_OPTIONS="$(find "$RUNTIME_DIR" -maxdepth 1 \( \( -type d ! -path "$RUNTIME_DIR" \) -o \( -type f -name '*.tar.gz' \) \))"
+	#RUNTIME_OPTIONS="$(find "$RUNTIME_DIR" -maxdepth 1 -type f -name '*.tar.gz')"
+	RUNTIME_OPTIONS="$(find $RUNTIME_OPTIONS -maxdepth 0 -name "*$RUNTIME_CHOICE*" -exec basename {} \;)"
+	[ -n "$RUNTIME_OPTIONS" ] && RUNTIME="$(echo "$RUNTIME_OPTIONS" | select_from_list -1)"
+fi
 
-if [ -z "$RUNTIME" -o "$RUNTIME" = 'docker' ]; then
+if [ -z "$RUNTIME" -o ! -e "$RUNTIME_DIR/$RUNTIME" ]; then
 	echo "Using docker!"
 
 	docker kill -9 build-base 2>/dev/null
@@ -124,7 +139,7 @@ if [ -z "$RUNTIME" -o "$RUNTIME" = 'docker' ]; then
 		echo -n "Delete source directory? (y/N): " && read -r REPLY && { [ "$REPLY" = 'y' ] || [ "$REPLY" = 'Y' ]; } && echo "Deleting $TARGET_DIR" && sudo rm -rf "$_PWD/$TARGET_DIR"
 	fi
 else
-	RUNTIME="chroots/$RUNTIME"
+	RUNTIME="$RUNTIME_DIR/$RUNTIME"
 
 	[ -f "$RUNTIME" ] && { mkdir "$RUNTIME"_chroot 2>/dev/null && echo "extracting $RUNTIME" && tar xaf "$RUNTIME" -C "$RUNTIME"_chroot; RUNTIME="$RUNTIME"_chroot; }
 
