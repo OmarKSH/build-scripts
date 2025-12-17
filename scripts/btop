@@ -1,0 +1,9 @@
+#!/bin/sh
+
+DOCKER_IMG=alpine:latest
+TARGET_DIR="btop"
+TARGET=btop
+PKG_CMD="apk add --no-cache git upx build-base coreutils sed lowdown"
+DOWNLOAD_CMD="git clone --depth=1 https://github.com/aristocratos/btop \"$TARGET_DIR\""
+BUILD_CMD="make -j$(nproc) STATIC=true STRIP=true && ln -f bin/btop"
+CLEANUP_CMD="make clean"

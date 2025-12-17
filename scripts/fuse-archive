@@ -1,0 +1,14 @@
+#!/bin/sh
+
+DOCKER_IMG=alpine:latest
+TARGET_DIR="fuse-archive"
+TARGET='fuse*-archive'
+PKG_CMD="apk add --no-cache git upx build-base pkgconf boost-dev libarchive-dev fuse-dev fuse3-dev boost-static libarchive-static fuse3-static fuse-static openssl-libs-static zlib-static lz4-static bzip2-static xz-static zstd-static expat-static"
+DOWNLOAD_CMD="git clone --depth=1 https://github.com/google/fuse-archive \"$TARGET_DIR\""
+# For some reason lz4 needs to be built from source even though the latest version is the same as the one in alpine repo
+BUILD_CMD="rm -rf lz4 && git clone --depth=1 -b release https://github.com/lz4/lz4 lz4 \
+	&& cd lz4 && make -j$(nproc) -C lib && make -j$(nproc) -C lib install PREFIX=/usr && cd .. \
+	&& { FUSE_MAJOR_VERSION=2 LDFLAGS='-static -lcrypto -lz -llz4 -lbz2 -llzma -lzstd -lexpat' make -j$(nproc) && mv out/fuse-archive fuse2-archive; \
+	FUSE_MAJOR_VERSION=3 LDFLAGS='-static -lcrypto -lz -llz4 -lbz2 -llzma -lzstd -lexpat' make -j$(nproc) && mv out/fuse-archive fuse-archive; }
+"
+CLEANUP_CMD=

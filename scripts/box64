@@ -1,0 +1,9 @@
+#!/bin/sh
+
+DOCKER_IMG=ubuntu:latest
+TARGET_DIR="box64"
+TARGET=box64
+PKG_CMD="apt install -y git build-essential cmake python3 #libx11-dev libxext-dev libxfixes-dev libxi-dev libxrender-dev"
+DOWNLOAD_CMD="git clone --depth=1 https://github.com/ptitSeb/box64 \"$TARGET_DIR\""
+BUILD_CMD="mkdir build || true; cd build; cmake .. -D ARM_DYNAREC=ON -D CMAKE_BUILD_TYPE=MinSizeRel -D BOX32=ON -D BOX32_BINFMT=ON; make -j$(nproc); mv box64 ..; cd .."
+CLEANUP_CMD="rm -rf build"

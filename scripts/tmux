@@ -1,0 +1,25 @@
+#!/bin/sh
+
+DOCKER_IMG=alpine:latest
+TARGET_DIR="tmux"
+TARGET=tmux
+PKG_CMD="apk add --no-cache git upx build-base pkgconfig automake autoconf bison libevent-dev libevent-static ncurses-dev ncurses-static"
+
+#apk add --no-cache cmake
+#cd \$HOME
+#git clone --depth=1 https://github.com/libevent/libevent.git
+#cd libevent
+#mkdir build && cd build
+#cmake ..     # Default to Unix Makefiles.
+#make install
+
+#apk add --no-cache wget tar gz
+#cd \$HOME
+#wget -O - https://invisible-mirror.net/archives/ncurses/\$(wget -O - https://invisible-mirror.net/archives/ncurses/ | grep -E 'ncurses-[0-9.]+.tar.gz' | grep -v .asc | cut -d'>' -f6 | cut -d'<' -f1 | sort | tail -1) | tar xz
+#wget -O - https://invisible-mirror.net/archives/ncurses/ncurses-5.9.tar.gz | tar xz
+#cd ncurses*
+#./configure
+#make install"
+DOWNLOAD_CMD="git clone --depth=1 https://github.com/tmux/tmux \"$TARGET_DIR\""
+BUILD_CMD="sh autogen.sh && ./configure --enable-static && make -j$(nproc)"
+CLEANUP_CMD="make clean"

@@ -1,0 +1,14 @@
+#!/bin/sh
+
+DOCKER_IMG=alpine:latest
+TARGET_DIR="relayd"
+TARGET=relayd
+PKG_CMD="apk add --no-cache git upx tar build-base cmake lua5.1 lua5.1-dev json-c-dev linux-headers"
+DOWNLOAD_CMD="git clone --depth=1 https://git.openwrt.org/project/relayd \"$TARGET_DIR\""
+BUILD_CMD="[ ! -d libubox ] && git clone --depth=1 https://git.openwrt.org/project/libubox libubox; \
+	{ mkdir -p ./libubox/build || true; } && cd ./libubox/build && cmake .. && make -j$(nproc) \
+	&& ln -sf $TARGET_DIR/libubox /usr/include && ln -sf $TARGET_DIR/libubox/build/libubox.a /usr/local/lib && cd ../.. \
+	&& { mkdir ./build || true; } && cd ./build && cmake -DCMAKE_C_FLAGS=-static .. && make -j$(nproc) \
+	&& mv relayd .. && cd ..
+"
+CLEANUP_CMD="rm -rf build libubox"

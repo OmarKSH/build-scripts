@@ -1,0 +1,11 @@
+#!/bin/sh
+
+DOCKER_IMG=alpine:latest
+TARGET_DIR="ugrep"
+TARGET=ugrep
+PKG_CMD="apk add --no-cache git upx tar bash build-base linux-headers boost-regex pcre2-dev zlib-dev bzip2-dev xz-dev lz4-dev zstd-dev brotli-dev #pcre2-static zlib-static bzip2-static xz-static lz4-static zstd-static brotli-static"
+DOWNLOAD_CMD="git clone --depth=1 https://github.com/Genivia/ugrep \"$TARGET_DIR\""
+BUILD_CMD="./build.sh #--enable-static
+	mv src/$TARGET $TARGET
+"
+CLEANUP_CMD="make clean"

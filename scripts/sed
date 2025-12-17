@@ -1,0 +1,9 @@
+#!/bin/sh
+
+DOCKER_IMG=alpine:latest
+TARGET_DIR="sed"
+TARGET=sed.bin
+PKG_CMD="apk add --no-cache git upx build-base autoconf automake pkgconfig wget python3 linux-headers gettext-dev gettext-static texinfo xz"
+DOWNLOAD_CMD="git clone --depth=1 --recursive git://git.savannah.gnu.org/sed \"$TARGET_DIR\""
+BUILD_CMD="./bootstrap && ./configure && make -j$(nproc) LDFLAGS='-static' WERROR_CFLAGS= && ln -f sed/sed sed.bin"
+CLEANUP_CMD="make clean"

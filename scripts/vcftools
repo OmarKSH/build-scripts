@@ -1,0 +1,9 @@
+#!/bin/sh
+
+DOCKER_IMG=alpine:latest
+TARGET_DIR="vcftools"
+TARGET='bin/*'
+PKG_CMD="apk add --no-cache git upx tar build-base pkgconfig automake autoconf perl zlib-dev zlib-static"
+DOWNLOAD_CMD="git clone --depth=1 https://github.com/vcftools/vcftools \"$TARGET_DIR\""
+BUILD_CMD="export PERL5LIB=$PWD/src/perl/; sh autogen.sh && ./configure --enable-static && make -j$(nproc) install && cp -a /usr/local/bin bin"
+CLEANUP_CMD="make clean"

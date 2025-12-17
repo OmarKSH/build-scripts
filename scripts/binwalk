@@ -1,0 +1,9 @@
+#!/bin/sh
+
+DOCKER_IMG=alpine:latest
+TARGET_DIR="binwalk"
+TARGET=binwalk
+PKG_CMD="apk add --no-cache git upx tar curl build-base fontconfig-dev fontconfig-static xz-dev xz-static openssl-dev openssl-libs-static"
+DOWNLOAD_CMD="git clone --depth=1 https://github.com/ReFirmLabs/binwalk \"$TARGET_DIR\""
+BUILD_CMD="curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && . ~/.cargo/env && cargo build -j$(nproc) --release && mv target/release/binwalk ."
+CLEANUP_CMD="cargo clean"

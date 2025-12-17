@@ -1,0 +1,9 @@
+#!/bin/sh
+
+DOCKER_IMG=alpine:latest
+TARGET_DIR="fscrypt"
+TARGET=bin/fscrypt
+PKG_CMD="apk add --no-cache git upx tar build-base go findutils linux-pam-dev"
+DOWNLOAD_CMD="git clone --depth=1 https://github.com/google/fscrypt \"$TARGET_DIR\""
+BUILD_CMD="make -j$(nproc)"
+CLEANUP_CMD="make clean"

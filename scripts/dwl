@@ -1,0 +1,11 @@
+#!/bin/sh
+
+DOCKER_IMG=alpine:edge
+TARGET_DIR="dwl"
+TARGET=dwl
+PKG_CMD="apk add --no-cache git upx tar build-base pkgconfig wayland wayland-dev wayland-protocols wayland-protocols-dev libinput libinput-dev libxkbcommon-dev libxkbcommon-static wlroots wlroots-dev libxcb libxcb-dev libxcb-static xcb-util-wm xwayland xwayland-dev"
+DOWNLOAD_CMD="git clone --depth=1 https://codeberg.org/dwl/dwl \"$TARGET_DIR\""
+BUILD_CMD="sed -i 's#fullscreen_bg[]         = {0.0f, 0.0f, 0.0f, 1.0f};#fullscreen_bg[]         = {0.1f, 0.1f, 0.1f, 1.0f};#' config.def.h \
+	&& sed -i 's#define MODKEY WLR_MODIFIER_ALT#define MODKEY WLR_MODIFIER_LOGO#' config.def.h \
+	&& make -j$(nproc) && rm config.h"
+CLEANUP_CMD="make clean"

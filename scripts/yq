@@ -1,0 +1,9 @@
+#!/bin/sh
+
+DOCKER_IMG=alpine:latest
+TARGET_DIR="yq"
+TARGET=yq
+PKG_CMD="apk add --no-cache git upx tar build-base go"
+DOWNLOAD_CMD="git clone --depth=1 https://github.com/mikefarah/yq \"$TARGET_DIR\""
+BUILD_CMD="git config --global --add safe.directory \"$TARGET_DIR\" && go mod tidy && go build -buildmode=pie -ldflags '-linkmode external -extldflags -static'"
+CLEANUP_CMD="go clean"

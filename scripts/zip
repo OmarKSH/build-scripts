@@ -1,0 +1,9 @@
+#!/bin/sh
+
+DOCKER_IMG=alpine:latest
+TARGET_DIR="zip"
+TARGET=zip
+PKG_CMD="apk add --no-cache git upx build-base"
+DOWNLOAD_CMD="git clone --depth=1 https://github.com/LuaDist/zip \"$TARGET_DIR\""
+BUILD_CMD="make -f unix/Makefile os390 -j$(nproc) LFLAGS1='-static'"
+CLEANUP_CMD="make -f unix/Makefile clean"

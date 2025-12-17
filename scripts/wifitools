@@ -1,0 +1,9 @@
+#!/bin/sh
+
+DOCKER_IMG=alpine:latest
+TARGET_DIR="wifitools"
+TARGET='bin/*'
+PKG_CMD="apk add --no-cache git upx tar build-base xz bison flex gawk linux-headers pkgconf readline-static perl libnl3-dev libnl3-static openssl-dev openssl-libs-static"
+DOWNLOAD_CMD="git clone --depth=1 https://github.com/OmarKSH/wifi_tools_static \"$TARGET_DIR\""
+BUILD_CMD="make -j$(nproc) && mv binaries bin"
+CLEANUP_CMD="make clean"

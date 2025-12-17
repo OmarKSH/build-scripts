@@ -1,0 +1,9 @@
+#!/bin/sh
+
+DOCKER_IMG=alpine:latest
+TARGET_DIR="daemonize"
+TARGET=daemonize
+PKG_CMD="apk add --no-cache git upx build-base autoconf automake pkgconfig"
+DOWNLOAD_CMD="git clone --depth=1 https://github.com/bmc/daemonize \"$TARGET_DIR\""
+BUILD_CMD="./configure && make -j$(nproc) LDFLAGS='-static'"
+CLEANUP_CMD="make clean"

@@ -1,0 +1,16 @@
+#!/bin/sh
+
+DOCKER_IMG=alpine:latest
+TARGET_DIR="screen"
+TARGET=screen
+PKG_CMD="apk add --no-cache git upx build-base autoconf automake pkgconfig ncurses-dev ncurses-static"
+DOWNLOAD_CMD="git clone --depth=1 https://git.savannah.gnu.org/git/screen \"$TARGET_DIR\""
+BUILD_CMD=$(cat <<-'EOF'
+cd src
+git checkout screen.c
+sed -i 's#passwd \*ppp;#passwd \*ppp; struct passwd ppp2 = { .pw_name=\"root\", .pw_passwd=\"x\", .pw_uid=0, .pw_gid=0, .pw_gecos=\"root\", .pw_dir=\"/dev\", .pw_shell=\"/bin/sh\" };#' screen.c
+sed -i 's#Panic(0, "getpwuid() can'"'"'t identify your account!");#ppp=\&ppp2; } if (0) {Panic(0, "getpwuid() cant identify your account!");#' screen.c
+./autogen.sh && ./configure --disable-pam && make -j$(nproc) LDFLAGS='-static' && mv screen .. && cd ..
+EOF
+)
+CLEANUP_CMD="cd src && make clean && cd .."

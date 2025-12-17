@@ -1,0 +1,12 @@
+#!/bin/sh
+
+DOCKER_IMG=alpine:latest
+TARGET_DIR="neovim"
+TARGET=.nvim
+PKG_CMD="apk add --no-cache git upx build-base cmake coreutils curl gettext-tiny-dev"
+DOWNLOAD_CMD="git clone --depth=1 -b stable https://github.com/neovim/neovim \"$TARGET_DIR\""
+BUILD_CMD="make -j$(nproc) CMAKE_BUILD_TYPE=Release CMAKE_EXTRA_FLAGS=\"-DSTATIC_BUILD=1\" && ln -f build/bin/nvim .nvim;
+	echo 'pwd=\"\$(dirname \$0)\";[ -d \"\$pwd/.config/nvim\" ] || { git clone --depth=1 https://github.com/NvChad/starter \"\$pwd\"/.config/nvim 2>/dev/null || true; } && HOME=\"\$pwd\" VIMRUNTIME=\"\$pwd/runtime\" \"\$pwd\"/.nvim \$@' >> nvim \
+	&& chmod +x .nvim nvim && ./nvim -c ':q'
+"
+CLEANUP_CMD="tar cf nvim.tar .nvim nvim runtime && tar cf nvchad.tar .local .config; mv .nvim nvim; rm -rf .local .cache .config; make clean"
