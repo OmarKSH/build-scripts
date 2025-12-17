@@ -1,0 +1,9 @@
+#!/bin/sh
+
+DOCKER_IMG=alpine:latest
+TARGET_DIR="unzip60"
+TARGET="funzip unzip unzipsfx"
+PKG_CMD="apk add --no-cache curl tar upx build-base"
+DOWNLOAD_CMD="curl -L https://sourceforge.net/projects/infozip/files/UnZip%206.x%20%28latest%29/UnZip%206.0/unzip60.tar.gz/download | tar xz"
+BUILD_CMD="sed -i 's# -Wl,EDIT=NO##' unix/Makefile; make -f unix/Makefile os390 -j$(nproc) LFLAGS1='-static'"
+CLEANUP_CMD="make -f unix/Makefile clean"
