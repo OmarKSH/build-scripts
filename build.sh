@@ -111,9 +111,9 @@ mkdir "$RUNTIME_DIR" 2>/dev/null
 if [ -e "$RUNTIME_DIR/$RUNTIME_CHOICE" -a -n "$RUNTIME_CHOICE" ]; then
 	RUNTIME="$RUNTIME_CHOICE"
 else
-	RUNTIME_OPTIONS="$(find "$RUNTIME_DIR" -maxdepth 1 \( \( -type d ! -path "$RUNTIME_DIR" \) -o \( -type f -name '*.tar.gz' \) \))"
-	#RUNTIME_OPTIONS="$(find "$RUNTIME_DIR" -maxdepth 1 -type f -name '*.tar.gz')"
-	RUNTIME_OPTIONS="$(find $RUNTIME_OPTIONS -maxdepth 0 -name "*$RUNTIME_CHOICE*" -exec basename {} \;)"
+	RUNTIME_ARCHIVES="$(find -L "$RUNTIME_DIR" -maxdepth 1 -type f \( -name '*.tar' -o -name '*.tar.*' \))"
+	RUNTIME_DIRS="$(find -L $RUNTIME_DIR -maxdepth 1 -type d -exec sh -c '[ -e "$1/proc" -a -e "$1/dev" -a -e "$1/sys" ] && echo $1' _ {} \;)"
+	RUNTIME_OPTIONS="$(find $RUNTIME_DIRS $RUNTIME_ARCHIVES -maxdepth 0 ! -path . -name "*$RUNTIME_CHOICE*" -exec basename {} \;)"
 	[ -n "$RUNTIME_OPTIONS" ] && RUNTIME="$(echo "$RUNTIME_OPTIONS" | select_from_list -1)"
 fi
 
