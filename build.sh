@@ -48,8 +48,8 @@ set -a # export all variables
 # Make the build script variables available inside the launched environment
 $([ -f "$SCRIPT" ] && cat "$SCRIPT")
 
-trap 'echo "Interrupting flow"; exec sh' INT
-trap 'echo "Error! dropping to shell"; exec sh' ERR
+trap 'echo "Interrupting flow"; { bash -c "" 2>/dev/null && exec bash && exit; } || exec sh' INT
+trap 'echo "Error! dropping to shell"; { bash -c "" 2>/dev/null && bash && exit; } || sh' ERR
 
 if type apt >/dev/null 2>/dev/null; then
 	export DEBIAN_FRONTEND=noninteractive
@@ -61,7 +61,7 @@ elif type apk >/dev/null 2>/dev/null; then
 	apk add --no-cache build-base pkgconf automake autoconf
 fi
 
-[ ${#BUILD_CMD} -eq 0 ] && { exec sh; exit 0; }
+[ ${#BUILD_CMD} -eq 0 ] && { { bash -c "" 2>/dev/null && exec bash && exit; } || exec sh; exit 0; }
 
 $PKG_CMD
 
