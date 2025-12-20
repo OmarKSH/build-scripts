@@ -105,24 +105,22 @@ exit 0
 EOF
 )
 
-RUNTIME_CHOICE="$2"
+RUNTIME="$2"
 RUNTIME_DIR=chroots
 mkdir "$RUNTIME_DIR" 2>/dev/null
-if [ -e "$RUNTIME_DIR/$RUNTIME_CHOICE" -a -n "$RUNTIME_CHOICE" ]; then
-	RUNTIME="$RUNTIME_CHOICE"
-else
-	RUNTIME_ARCHIVES="$(find -L "$RUNTIME_DIR" -maxdepth 1 -type f \( -name '*.tar' -o -name '*.tar.*' \))"
-	RUNTIME_DIRS="$(find -L $RUNTIME_DIR -maxdepth 1 -type d -exec sh -c '[ -e "$1/proc" -a -e "$1/dev" -a -e "$1/sys" ] && echo $1' _ {} \;)"
-	RUNTIME_OPTIONS="$(find $RUNTIME_DIRS $RUNTIME_ARCHIVES -maxdepth 0 ! -path . -name "*$RUNTIME_CHOICE*" -exec basename {} \;)"
-	[ -n "$RUNTIME_OPTIONS" ] && RUNTIME="$(echo "$RUNTIME_OPTIONS" | select_from_list -1)"
-fi
+
+RUNTIME_ARCHIVES="$(find -L "$RUNTIME_DIR" -maxdepth 1 -type f \( -name '*.tar' -o -name '*.tar.*' \))"
+RUNTIME_DIRS="$(find -L $RUNTIME_DIR -maxdepth 1 -type d -exec sh -c '[ -e "$1/proc" -a -e "$1/dev" -a -e "$1/sys" ] && echo $1' _ {} \;)"
+RUNTIME_OPTIONS="$(find $RUNTIME_DIRS $RUNTIME_ARCHIVES -maxdepth 0 ! -path . -name "*$RUNTIME*" -exec basename {} \;)"
+[ -n "$RUNTIME_OPTIONS" ] && RUNTIME="$(echo "$RUNTIME_OPTIONS" | select_from_list -1)"
 
 if [ -z "$RUNTIME" -o ! -e "$RUNTIME_DIR/$RUNTIME" ]; then
-	echo "Using docker!"
+	RUNTIME="${RUNTIME:-${DOCKER_IMG:-alpine:latest}}"
+	echo "Using docker! $RUNTIME"
 
 	docker kill -9 build-base 2>/dev/null
 	docker rm build-base 2>/dev/null
-	docker run --name build-base --rm -it -v"$_PWD":/src -w/src ${DOCKER_IMG:-alpine:latest} sh -c "$COMMAND"
+	docker run --name build-base --rm -it -v"$_PWD":/src -w/src "$RUNTIME" sh -c "$COMMAND"
 
 	if [ -d "$_PWD/$TARGET_DIR" -a -n "$TARGET_DIR" ]; then
 		for f in $TARGET; do #if one of the targets have the same name as the directory
