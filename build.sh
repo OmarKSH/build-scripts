@@ -38,12 +38,9 @@ cd "${0%/*}"
 SCRIPT_CHOICE="$1"
 SCRIPT_DIR=scripts
 mkdir "$SCRIPT_DIR" 2>/dev/null
-if [ -e "$SCRIPT_DIR/$SCRIPT_CHOICE" -a -n "$SCRIPT_CHOICE" ]; then
-	SCRIPT="$SCRIPT_DIR/$SCRIPT_CHOICE"
-else
-	SCRIPT_OPTIONS="$(find "$SCRIPT_DIR" -maxdepth 1 -name "*$SCRIPT_CHOICE*" -exec basename {} \;)"
-	[ -n "$SCRIPT_OPTIONS" ] && SCRIPT="$SCRIPT_DIR/$(echo "$SCRIPT_OPTIONS" | select_from_list -1)"
-fi
+
+SCRIPT_OPTIONS="$(find "$SCRIPT_DIR" -maxdepth 1 -type f -name "*$SCRIPT_CHOICE*" -exec basename {} \;)"
+[ -n "$SCRIPT_OPTIONS" ] && SCRIPT="$SCRIPT_DIR/$(echo "$SCRIPT_OPTIONS" | select_from_list -1)"
 
 [ ${#SCRIPT} -gt 0 ] && . "$SCRIPT"
 
