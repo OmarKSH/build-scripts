@@ -1,0 +1,9 @@
+#!/bin/sh
+
+DOCKER_IMG=ubuntu:latest
+TARGET_DIR="tiny7zx"
+TARGET=tiny7zx
+PKG_CMD="apt install -y git upx build-essential"
+DOWNLOAD_CMD="git clone --depth=1 https://github.com/pts/pts-tiny-7z-sfx \"$TARGET_DIR\""
+BUILD_CMD="make -j$(nproc) CFLAGS='-static' && mv tiny7zx.dynamic tiny7zx"
+CLEANUP_CMD="make clean"
