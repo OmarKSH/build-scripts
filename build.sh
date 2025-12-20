@@ -16,7 +16,7 @@ select_from_list() {
 chroot() {
 	CHROOT_DIR="$PWD"
 
-	sudo umount -Rf "$CHROOT_DIR"/* 2>/dev/null
+	sudo umount --lazy -Rf "$CHROOT_DIR"/* 2>/dev/null
 
 	sudo mount -t proc proc proc \
 	        && sudo mount -t sysfs sys sys \
@@ -28,7 +28,7 @@ chroot() {
 	cleanup
 }
 
-cleanup() { [ -d "$CHROOT_DIR" ] && sudo umount -Rf "$CHROOT_DIR"/* 2>/dev/null; [ -d "$_PWD" ] && cd "$_PWD"; }
+cleanup() { [ -d "$CHROOT_DIR" ] && sudo umount --lazy -Rf "$CHROOT_DIR"/* 2>/dev/null; [ -d "$_PWD" ] && cd "$_PWD"; }
 trap 'cleanup' EXIT QUIT TERM
 trap 'cleanup; exit' INT
 
