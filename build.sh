@@ -61,6 +61,7 @@ trap '[ \$? -eq 0 ] && exit 0; echo "Error! dropping to shell"; { bash -c "" 2>/
 
 if type apt >/dev/null 2>/dev/null; then
 	export DEBIAN_FRONTEND=noninteractive
+	apt update || { apt update -o Acquire::AllowInsecureRepositories=true -o Acquire::AllowDowngradeToInsecureRepositories=true && apt install -y --allow-unauthenticated ubuntu-keyring gnupg; }
 	apt update && apt upgrade -y && DEBIAN_FRONTEND=noninteractive apt install -y build-essential pkgconf automake autoconf
 elif type xbps-install 2>/dev/null >/dev/null; then
 	xbps-install -Suy && xbps-install -y base-devel
