@@ -43,13 +43,14 @@ SCRIPT=scripts/"${1:-$(ls scripts | select_from_list)}"
 [ "${#BUILD_CMD}" -eq 0 ] && echo "No build command, launching dev environment!"
 
 COMMAND=$(cat <<- EOF
+set -e # needed to make error trap work using EXIT signal
 set -a # export all variables
 
 # Make the build script variables available inside the launched environment
 $([ -f "$SCRIPT" ] && cat "$SCRIPT")
 
 trap 'echo "Interrupting flow"; { bash -c "" 2>/dev/null && exec bash && exit; } || exec sh' INT
-trap 'echo "Error! dropping to shell"; { bash -c "" 2>/dev/null && bash && exit; } || sh' ERR
+trap '[ \$? -eq 0 ] && exit 0; echo "Error! dropping to shell"; { bash -c "" 2>/dev/null && bash && exit; } || sh' EXIT
 
 if type apt >/dev/null 2>/dev/null; then
 	export DEBIAN_FRONTEND=noninteractive
