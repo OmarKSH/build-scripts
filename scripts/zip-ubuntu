@@ -1,9 +1,0 @@
-#!/bin/sh
-
-DOCKER_IMG=ubuntu:latest
-TARGET_DIR="zip30"
-TARGET="zip zipsplit zipnote zipcloak"
-PKG_CMD="apt install -y curl tar upx build-essential"
-DOWNLOAD_CMD="curl -L https://sourceforge.net/projects/infozip/files/Zip%203.x%20%28latest%29/3.0/zip30.tar.gz/download | tar xz"
-BUILD_CMD="make -f unix/Makefile os390 -j$(nproc) LFLAGS1='-static'"
-CLEANUP_CMD="make -f unix/Makefile clean"
