@@ -1,0 +1,9 @@
+#!/bin/sh
+
+DOCKER_IMG=alpine:latest
+TARGET_DIR="zip-fix-filename-encoding"
+TARGET="runzip"
+PKG_CMD="apk add --no-cache git upx build-base pkgconf autoconf automake libtool libzip-dev "
+DOWNLOAD_CMD="git clone --depth=1 https://github.com/vlm/zip-fix-filename-encoding \"$TARGET_DIR\""
+BUILD_CMD="sed -i 's#ir = iconv(ic, \&str,#ir = iconv(ic, (char ** restrict)\&str,#' src/runzip.c && sed -i 's#AC_MSG_ERROR(\[ZLIB version too old, please install at least v1.1.2\])#id_cv_lib_zlib_ok=\"yes\"#' libzip-0.7.1/configure.ac && autoreconf -iv && ./configure --build=aarch64-unknown-linux-gnu && make -j$(nproc) CFLAGS=-static LDFLAGS=-static && mv src/runzip ."
+CLEANUP_CMD="make clean"
