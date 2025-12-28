@@ -15,7 +15,7 @@ DOWNLOAD_CMD="
 "
 BUILD_CMD="
 	curl -LO https://raw.githubusercontent.com/jarun/advcpmv/master/advcpmv-$ADVCPMV_VERSION-$CORE_UTILS_VERSION.patch \
-	&& { patch -N -p1 -i advcpmv-$ADVCPMV_VERSION-$CORE_UTILS_VERSION.patch || true; } \
+	&& patch -N -p1 -i advcpmv-$ADVCPMV_VERSION-$CORE_UTILS_VERSION.patch \
 	&& env FORCE_UNSAFE_CONFIGURE=1 CFLAGS='-Os -ffunction-sections -fdata-sections' LDFLAGS='-Wl,--gc-sections -static' ./configure && make -j$(nproc) \
 	&& mv src/cp src/advcp && mv src/mv src/advmv \
 	&& { mkdir bin || true; } && mv \$(find src -type f -executable) bin \
