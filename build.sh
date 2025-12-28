@@ -72,7 +72,7 @@ fi
 $PKG_CMD
 
 [ -e "$TARGET_DIR" -a ! -d "$TARGET_DIR" ] && echo "$TARGET_DIR already exists and is not a directory" #&& TARGET_DIR="${TARGET_DIR}.$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c4)"
-[ ! -d "$TARGET_DIR" ] && { $DOWNLOAD_CMD; }
+[ ! -d "$TARGET_DIR" ] && $DOWNLOAD_CMD
 [ ! -d "$TARGET_DIR" ] && echo 'Failed to download files'
 cd "$TARGET_DIR"
 
