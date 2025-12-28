@@ -36,6 +36,7 @@ _PWD="$PWD"
 cd "${0%/*}"
 
 SCRIPT_CHOICE="$1"
+[ ${#1} -gt 0 ] && shift
 SCRIPT_DIR=scripts
 mkdir "$SCRIPT_DIR" 2>/dev/null
 
@@ -104,6 +105,7 @@ EOF
 )
 
 RUNTIME="$2"
+[ ${#2} -gt 0 ] && shift
 RUNTIME_DIR=chroots
 mkdir "$RUNTIME_DIR" 2>/dev/null
 
