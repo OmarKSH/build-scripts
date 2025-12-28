@@ -70,9 +70,9 @@ fi
 [ ${#BUILD_CMD} -eq 0 ] && { { bash -c "" 2>/dev/null && exec bash && exit; } || exec sh; exit 0; }
 
 $PKG_CMD
-
+echo here1
 [ -e "$TARGET_DIR" -a ! -d "$TARGET_DIR" ] && echo "$TARGET_DIR already exists and is not a directory" #&& TARGET_DIR="${TARGET_DIR}.$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c4)"
-[ ! -d "$TARGET_DIR" ] && { $DOWNLOAD_CMD; }
+[ ! -d "$TARGET_DIR" ] && $DOWNLOAD_CMD
 [ ! -d "$TARGET_DIR" ] && echo 'Failed to download files'
 cd "$TARGET_DIR"
 
