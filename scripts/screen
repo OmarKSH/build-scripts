@@ -10,7 +10,7 @@ cd src
 git checkout screen.c
 sed -i 's#passwd \*ppp;#passwd \*ppp; struct passwd ppp2 = { .pw_name=\"root\", .pw_passwd=\"x\", .pw_uid=0, .pw_gid=0, .pw_gecos=\"root\", .pw_dir=\"/dev\", .pw_shell=\"/bin/sh\" };#' screen.c
 sed -i 's#Panic(0, "getpwuid() can'"'"'t identify your account!");#ppp=\&ppp2; } if (0) {Panic(0, "getpwuid() cant identify your account!");#' screen.c
-./autogen.sh && ./configure --disable-pam && make -j$(nproc) LDFLAGS='-static' && mv screen .. && cd ..
+./autogen.sh && LDFLAGS=-static ./configure --disable-pam && make -j$(nproc) && mv screen .. && cd ..
 EOF
 )
 CLEANUP_CMD="cd src && make clean && cd .."

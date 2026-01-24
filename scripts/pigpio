@@ -5,5 +5,5 @@ TARGET_DIR="pigpio"
 TARGET=
 PKG_CMD="apk add --no-cache git upx build-base"
 DOWNLOAD_CMD="git clone --depth=1 https://github.com/joan2937/pigpio \"$TARGET_DIR\""
-BUILD_CMD="make -j$(nproc) CFLAGS='-std=gnu11'"
+BUILD_CMD="CFLAGS=-std=gnu11 make -j$(nproc); ar rcs libpigpio.a *.o"
 #CLEANUP_CMD="make clean"

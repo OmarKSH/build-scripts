@@ -5,5 +5,5 @@ TARGET_DIR="netdiscover"
 TARGET=netdiscover
 PKG_CMD="apk add --no-cache git upx build-base autoconf automake pkgconfig libpcap-dev libnet-dev libnet-static bash dos2unix gzip axel grep"
 DOWNLOAD_CMD="git clone --depth=1 https://github.com/netdiscover-scanner/netdiscover \"$TARGET_DIR\""
-BUILD_CMD="./update-oui-database.sh && ./autogen.sh && ./configure && make -j$(nproc) LDFLAGS='-static' && ln src/netdiscover"
+BUILD_CMD="rm oui.txt*; ./update-oui-database.sh && ./autogen.sh &&  LDFLAGS=-static ./configure && make -j$(nproc) && ln src/netdiscover"
 CLEANUP_CMD="make clean"

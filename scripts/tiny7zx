@@ -5,5 +5,5 @@ TARGET_DIR="tiny7zx"
 TARGET=tiny7zx
 PKG_CMD="apk add --no-cache git upx build-base"
 DOWNLOAD_CMD="git clone --depth=1 https://github.com/pts/pts-tiny-7z-sfx \"$TARGET_DIR\""
-BUILD_CMD="git checkout .; sed -i 's#lseek64(#lseek(#' 7zStream.c; make -j$(nproc) CFLAGS='-static' && mv tiny7zx.dynamic tiny7zx"
+BUILD_CMD="git checkout .; sed -i 's#lseek64(#lseek(#' 7zStream.c; CFLAGS=-static make -j$(nproc) && mv tiny7zx.dynamic tiny7zx"
 CLEANUP_CMD="make clean"

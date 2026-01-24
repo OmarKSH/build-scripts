@@ -8,9 +8,9 @@ DOWNLOAD_CMD="git clone --depth=1 https://github.com/LonnyGomes/hexcurse \"$TARG
 BUILD_CMD="sed -i 's#^FILE \*fpIN;#extern FILE *fpIN;#' include/hex.h \
 	&& grep 'FILE \*fpIN;' src/hexcurse.c >/dev/null || sed -i '\$a FILE *fpIN;' src/hexcurse.c \
 	&& rm -rf ./configure~ autom4te.cache aclocal.m4 \
-	&& ./configure \
+	&& LDFLAGS=-static ./configure \
 	&& ln -sf \$(which aclocal) \$(which aclocal)-1.15 \
 	&& ln -sf \$(which automake) \$(which automake)-1.15 \
-	&& make -j$(nproc) LDFLAGS=--static \
+	&& make -j$(nproc) \
 	&& mv src/$TARGET ."
 CLEANUP_CMD="make clean"
