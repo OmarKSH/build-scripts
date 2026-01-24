@@ -104,8 +104,8 @@ exit 0
 EOF
 )
 
-RUNTIME="$2"
-[ ${#2} -gt 0 ] && shift
+RUNTIME="$1"
+[ ${#1} -gt 0 ] && shift
 RUNTIME_DIR=chroots
 mkdir "$RUNTIME_DIR" 2>/dev/null
 
