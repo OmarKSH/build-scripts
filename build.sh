@@ -112,7 +112,8 @@ mkdir "$RUNTIME_DIR" 2>/dev/null
 
 RUNTIME_ARCHIVES="$(find -L "$RUNTIME_DIR" -maxdepth 1 -type f \( -name '*.tar' -o -name '*.tar.*' \))"
 RUNTIME_DIRS="$(find -L $RUNTIME_DIR -maxdepth 1 -type d -exec sh -c '[ -e "$1/proc" -a -e "$1/dev" -a -e "$1/sys" ] && echo $1' _ {} \;)"
-RUNTIME_OPTIONS="$(find $RUNTIME_DIRS $RUNTIME_ARCHIVES -maxdepth 0 ! -path . -name "*$RUNTIME*" -exec basename {} \;)"
+RUNTIME_OPTIONS="$(find $RUNTIME_DIRS $RUNTIME_ARCHIVES -maxdepth 0 ! -path . -name "*$RUNTIME*_chroot" -exec basename {} \;)"
+[ ${#RUNTIME_OPTIONS} -eq 0 ] && RUNTIME_OPTIONS="$(find $RUNTIME_DIRS $RUNTIME_ARCHIVES -maxdepth 0 ! -path . -name "*$RUNTIME*" -exec basename {} \;)"
 [ -n "$RUNTIME_OPTIONS" ] && RUNTIME="$(echo "$RUNTIME_OPTIONS" | select_from_list -1)"
 
 if [ -z "$RUNTIME" -o ! -e "$RUNTIME_DIR/$RUNTIME" ]; then
