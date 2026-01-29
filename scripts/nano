@@ -1,0 +1,9 @@
+#!/bin/sh
+
+DOCKER_IMG=alpine:latest
+TARGET_DIR="nano"
+TARGET=src/nano
+PKG_CMD="apk add --no-cache git upx build-base autoconf automake pkgconfig ncurses-dev ncurses-static gettext-dev gettext-static python3 texinfo linux-headers"
+DOWNLOAD_CMD="git clone --depth=1 https://git.savannah.gnu.org/git/nano \"$TARGET_DIR\""
+BUILD_CMD="./autogen.sh && ./configure LDFLAGS='-static' --disable-nls --disable-dependency-tracking && make -j$(nproc)"
+CLEANUP_CMD="make clean"
