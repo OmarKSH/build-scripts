@@ -83,20 +83,21 @@ git config --global --add safe.directory "\$PWD" 2>/dev/null || true
 
 $BUILD_CMD
 
-strip $TARGET || true
+find $TARGET -maxdepth 1 -type f -exec strip {} + || true
 
 [ ! -d packelf ] && [ ! -d ../packelf ] && { git clone --depth=1 https://github.com/OmarKSH/packelf packelf 2>/dev/null || true; }
 PATH=\$PATH:packelf:../packelf
-for f in $TARGET; do { packelf.sh \$PWD/\$f \$f.blob 2>/dev/null && chmod +x \$f.blob; } || true; done
+#for f in $TARGET; do { packelf.sh \$PWD/\$f \$f.blob 2>/dev/null && chmod +x \$f.blob; } || true; done
+find $TARGET -maxdepth 1 -type f -exec sh -c "packelf.sh \$PWD/\$1 \$1.blob 2>/dev/null && chmod +x \$1.blob;" _ {} \; || true
 
-upx --lzma $TARGET || true
+find $TARGET -maxdepth 1 -type f -exec upx --lzma {} + || true
 
 #read -n5 -r SUFFIX </dev/urandom && SUFFIX=`echo \$SUFFIX | base64`
 SUFFIX=\$(mktemp -u) && SUFFIX=\${SUFFIX#*.}
 TARGETS=
-for f in $TARGET; do ln -f \$f \$f.\$SUFFIX; TARGETS="\$TARGETS \$f.\$SUFFIX"; done
+for f in $TARGET; do mv \$f \$f.\$SUFFIX; TARGETS="\$TARGETS \$f.\$SUFFIX"; done
 $CLEANUP_CMD
-for f in \$TARGETS; do ln -f "\$f" "\${f%.*}" && rm -f "\$f"; done
+for f in \$TARGETS; do mv "\$f" "\${f%.*}"; done
 
 chown -R $(id -u):$(id -g) .
 
