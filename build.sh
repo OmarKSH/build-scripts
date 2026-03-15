@@ -21,7 +21,8 @@ chroot() {
 	sudo mount -t proc proc proc \
 	        && sudo mount -t sysfs sys sys \
 	        && sudo mount -t devtmpfs udev dev \
-	        && sudo mount -t devpts devpts dev/pts
+	        && sudo mount -t devpts devpts dev/pts \
+		&& { mkdir HOME 2>/dev/null || true; } && sudo mount --bind $HOME HOME
 
 	sudo chroot . /bin/sh -c "r=\"\$(cat /etc/resolv.conf 2>/dev/null)\"; [ -z \"\$r\" ] && echo 'nameserver 1.1.1.1' > /etc/resolv.conf; chmod 777 /tmp; $@"
 
